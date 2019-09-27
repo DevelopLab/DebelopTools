@@ -40,7 +40,7 @@ public class CumberCallable implements Callable<HttpResponse> {
 			URL url = new URL(cumberForm.getUrl());
 
 			connection = (HttpURLConnection) url.openConnection();
-			CumberController.setLog(String.format("DebelopTools --> Api 実行回数=[%s] URL=[%s] BODY=[%s]", numberOfExecutions, url, cumberForm.getBody()));
+			CumberController.setLog(String.format("DevelopTools --> Api 実行回数=[%s] URL=[%s] BODY=[%s]", numberOfExecutions, url, cumberForm.getBody()));
 
 			// ヘッダー情報を生成
 			connection.setRequestMethod(cumberForm.getRestType());
@@ -80,7 +80,7 @@ public class CumberCallable implements Callable<HttpResponse> {
 		HttpResponse httpResponse = new HttpResponse();
 		try {
 			int statusCode = connection.getResponseCode();
-			CumberController.setLog(String.format("DebelopTools <-- Api 実行回数=[%s] HTTP_STATUS=[%s]", numberOfExecutions, statusCode));
+			CumberController.setLog(String.format("DevelopTools <-- Api 実行回数=[%s] HTTP_STATUS=[%s]", numberOfExecutions, statusCode));
 			// HTTP_STATUSが200以外の場合、ErrorStreamからBODY情報を取得
 			if (connection.getErrorStream() != null) {
 				httpResponse.setBody(responseToBody(connection.getErrorStream()));

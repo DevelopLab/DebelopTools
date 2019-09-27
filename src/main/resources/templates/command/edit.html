@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+	<title>スタブサーバ</title>
+	<link rel="shortcut icon" href="./img/faviconIco.png" >
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+	<link href="https://fonts.googleapis.com/css?family=Quicksand:300,400,500,700" rel="stylesheet">
+	<script type="text/javascript" src="../../js/jquery.min.js"></script>
+	<script type="text/javascript" src="../../js/bootstrap.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			var console = $("textarea").val();
+			var loadLogId = null;
+
+			$("#start").click( function(){
+				var elem = document.getElementById("start");
+				elem.innerHTML = "起動中...";
+
+				var url = $("#url_start").val();
+				var JSONdata = {
+					apiName: $("#api_name").val(),
+					port: $("#port").val(),
+					uri: $("#uri").val(),
+					body: $("#body").val(),
+					httpStatusCode: $("#status_code").val()
+				};
+				ajaxRequest(url, JSONdata, "スタブサーバ起動コマンドを実行します。");
+				alert("スタブサーバ起動を起動します。");
+				loadLog();
+				// Logを取得(15秒毎に読込)
+				loadLogId = setInterval("loadLog()", 15000);
+			})
+			$("#stop").click( function(){
+				var url = $("#url_stop").val();
+				var JSONdata = {};
+				ajaxRequest(url, JSONdata, "終了コマンドを実行します。");
+			})
+			$("#clear").click( function(){
+				$.ajax({
+					url: 'http://localhost:8080/command/clearLog',
+					type: 'POST',
+					dataType: 'text',
+					scriptCharset: 'UTF-8'
+				}).always( (data) => {});
+
+				console = "";
+				$("#response").html(console);
+			});
+			// Ajaxリクエスト
+			function ajaxRequest(url, JSONdata, message) {
+				$.ajax({
+					url: url,
+					type: 'POST',
+					contentType: 'application/JSON',
+					accept: 'application/json;charset=UTF-8',
+					dataType: 'JSON',
+					scriptCharset: 'UTF-8',
+					data: JSON.stringify(JSONdata)
+				})
+                // Ajaxリクエストが成功した時発動
+                .done( (data) => {
+					alert(JSON.stringify(data));
+                })
+                // Ajaxリクエストが失敗した時発動
+                .fail( (data) => {
+					alert(JSON.stringify(data));
+                })
+                // Ajaxリクエストが成功・失敗どちらでも発動
+                .always( (data) => {
+
+                });
+			}
+		});
+		// Ajaxログ情報の読みこみ
+		function loadLog() {
+			$.ajax({
+	            type: 'POST',
+	            url: 'http://localhost:8080/command/log',
+	            dataType: 'text',
+				scriptCharset: 'UTF-8'
+			})
+            // Ajaxリクエストが成功した時発動
+            .done( (data) => {
+				$("#response").html(data);
+            })
+            // Ajaxリクエストが失敗した時発動
+            .fail( (data) => {
+				$("#response").html(data);
+				console.log("TEST"+ loadLogId);
+				clearInterval(loadLogId);
+            })
+            // Ajaxリクエストが成功・失敗どちらでも発動
+            .always( (data) => {
+				$("#response").html(data);
+            });
+		}
+	</script>
+</head>
+<body>
+    <div class="container" >
+
+    	<div class="form-group">
+			<h3> スタブサーバ起動 </h3>
+			<label >起動URL:</label>
+			<input type="text" id="url_start" name="url" class="form-control" value="http://localhost:8080/command/start">
+		</div>
+		<div style="border: solid; padding:20px; min-height: 50px;">
+			<div class="form-group">
+				<label>API名:</label>
+				<input type="text" id="api_name" name="api_name" class="form-control" value="スタブAPI">
+			</div>
+			<div class="form-group">
+				<label>ポート:</label>
+				<input type="number" id="port" name="port" class="form-control" value="18080">
+			</div>
+			<div class="form-group">
+				<label>URI:</label>
+				<input type="text" id="uri" name="uri" class="form-control" value="/command/test">
+			</div>
+			<div class="form-group">
+				<label>BODY:</label>
+				<input type="text" id="body" name="body" class="form-control" value="{TEST:TEST}">
+			</div>
+			<div class="form-group">
+				<label>HTTP-STATUS-CODE:</label>
+				<input type="number" id="status_code" name="status_code" class="form-control" value="200">
+			</div>
+			<button id="start" name="environment-status" class="btn btn-primary form-control" type="button">
+				<span class="glyphicon glyphicon-play-circle" aria-hidden="true"></span> 起動
+			</button>
+		</div>
+
+		<h3>終了コマンド</h3>
+		<div class="form-group">
+			<label>停止URL:</label>
+			<input type="text" id="url_stop" name="url_stop" class="form-control" value="http://localhost:8080/command/stop">
+		</div>
+		<div class="form-group">
+			<button id="stop" class="btn btn-danger form-control" type="button">
+				<span class="glyphicon glyphicon-stop" aria-hidden="true"></span> 停止
+			</button>
+		</div>
+		<div class="form-group">
+		    <h2>LOG</h2>
+			<textarea id="response" class="form-control"  style="height: 300px;" disabled></textarea>
+	    </div>
+	    <div class="form-group">
+			<button id="clear" class="btn btn-info form-control" type="button">
+				<span class="glyphicon glyphicon-trash" aria-hidden="true"></span> CLEAR
+			</button>
+	    </div>
+	</div>
+</body>
+</html>

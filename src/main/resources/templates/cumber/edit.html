@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+	<title>負荷ツール</title>
+	<link rel="shortcut icon" href="./img/faviconIco.png" >
+	<link rel="stylesheet" href="../css/bootstrap.min.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+	<link href="https://fonts.googleapis.com/css?family=Quicksand:300,400,500,700" rel="stylesheet">
+	<script type="text/javascript" src="../../js/jquery.min.js"></script>
+	<script type="text/javascript" src="../../js/bootstrap.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+			var console = $("textarea").val();
+			var headersCount = 0;
+			var loadLogId = null;
+
+			$("#headers_add").click( function() {
+				headersCount++;
+				var elem = document.getElementById("headers");
+				// ヘッダー追加した数だけ、高さを調整
+				var addHeight = 38 * headersCount;
+				elem.style.height = 53 + addHeight + 'px';
+				var inputTag = document.createElement('input');
+				inputTag.classList.add("form-control");
+				elem.appendChild(inputTag);
+			});
+			$("#headers_remove").click( function() {
+				if (headersCount == 0) {
+					return;
+				}
+				headersCount--;
+				var elem = document.getElementById("headers");
+				// ヘッダー追加した数だけ、高さを調整
+				var addHeight = 38 * headersCount;
+				elem.style.height = 53 + addHeight + 'px';
+				elem.removeChild(elem.lastChild);
+			});
+
+			$("#start").click( function(){
+				var elem = document.getElementById("start");
+				elem.innerHTML = "起動中...";
+
+				var url = $("#url_start").val();
+				var JSONdata = {
+						requestCount: $("#count").val(),
+						url: $("#url").val(),
+						restType: $("#restType").val(),
+						headers: $("#headers").val(),
+						body: $("#body").val()
+				};
+				ajaxRequest(url, JSONdata, "負荷を実行します。");
+				alert("対象のサーバに負荷をかけます。");
+				loadLog();
+				// Logを取得(15秒毎に読込)
+				loadLogId = setInterval("loadLog()", 15000);
+			});
+			$("#stop").click( function(){
+				var url = $("#url_stop").val();
+				var JSONdata = {};
+				ajaxRequest(url, JSONdata, "終了コマンドを実行します。");
+			});
+			$("#clear").click( function(){
+				$.ajax({
+					url: 'http://localhost:8080/cumber/clearLog',
+					type: 'POST',
+					dataType: 'text',
+					scriptCharset: 'UTF-8'
+				}).always( (data) => {});
+
+				console = "";
+				$("#response").html(console);
+			});
+			// Ajaxリクエスト
+			function ajaxRequest(url, JSONdata, message) {
+				$.ajax({
+					url: url,
+					type: 'POST',
+					contentType: 'application/JSON',
+					accept: 'application/json;charset=UTF-8',
+					dataType: 'JSON',
+					scriptCharset: 'UTF-8',
+					data: JSON.stringify(JSONdata)
+				})
+                // Ajaxリクエストが成功した時発動
+                .done( (data) => {
+					alert(JSON.stringify(data));
+                })
+                // Ajaxリクエストが失敗した時発動
+                .fail( (data) => {
+					alert(JSON.stringify(data));
+                })
+                // Ajaxリクエストが成功・失敗どちらでも発動
+                .always( (data) => {
+
+                });
+			}
+		});
+		// Ajaxログ情報の読みこみ
+		function loadLog() {
+			$.ajax({
+	            type: 'POST',
+	            url: 'http://localhost:8080/cumber/log',
+	            dataType: 'text',
+				scriptCharset: 'UTF-8'
+			})
+            // Ajaxリクエストが成功した時発動
+            .done( (data) => {
+				$("#response").html(data);
+            })
+            // Ajaxリクエストが失敗した時発動
+            .fail( (data) => {
+				$("#response").html(data);
+				console.log("TEST"+ loadLogId);
+				clearInterval(loadLogId);
+            })
+            // Ajaxリクエストが成功・失敗どちらでも発動
+            .always( (data) => {
+				$("#response").html(data);
+            });
+		}
+	</script>
+</head>
+<body>
+    <div class="container">
+
+    	<div class="form-group">
+		<h3>負荷ツール</h3>
+			<label >起動URL:</label>
+			<input type="text" id="url_start" name="url" class="form-control" value="http://localhost:8080/cumber/start">
+		</div>
+		<div style="border: solid; padding:20px; min-height: 50px;">
+			<div class="form-group">
+				<label>Request数:</label>
+				<input type="number" id="count" name="count" class="form-control" value="1">
+			</div>
+			<div class="form-group">
+				<label>URL:</label>
+				<input type="url" id="url" name="url" class="form-control" value="http://localhost:18080/command/test">
+			</div>
+			<div class="form-group">
+				<label>REST:</label>
+				<select id="restType" class="form-control">
+						<option value="GET">GET</option>
+						<option value="POST">POST</option>
+						<option value="PUT">PUT</option>
+						<option value="DELETE">DELETE</option>
+				</select>
+			</div>
+			<div class="form-group">
+				<label>ヘッダー:</label>
+				<div id="headers" class="form-control" style="height: 53px;">
+					<input type="text" class="form-control" value="TEST:TEST">
+				</div>
+			</div>
+			<div class="form-group">
+				<button id="headers_add" class="btn btn-success" type="button">
+					<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> 追加
+				</button>
+				<button id="headers_remove" class="btn btn-danger" type="button">
+					<span class="glyphicon glyphicon-minus" aria-hidden="true"></span> 削除
+				</button>
+			</div>
+			<div class="form-group">
+				<label>BODY:</label>
+				<input type="text" id="body" name="body" class="form-control" value='{"test":"test"}'>
+			</div>
+			<button id="start" name="environment-status" class="btn btn-primary form-control" type="button">
+				<span class="glyphicon glyphicon-play-circle" aria-hidden="true"></span> 起動
+			</button>
+		</div>
+
+		<h3>終了コマンド</h3>
+		<div class="form-group">
+			<label>停止URL:</label>
+			<input type="text" id="url_stop" name="url_stop" class="form-control" value="http://localhost:8080/command/stop">
+		</div>
+		<div class="form-group">
+			<button id="stop" class="btn btn-danger form-control" type="button">
+				<span class="glyphicon glyphicon-stop" aria-hidden="true"></span> 停止
+			</button>
+		</div>
+
+		<h3>LOG</h3>
+		<div class="form-group">
+			<textarea id="response" class="form-control"  style="height: 300px;" disabled></textarea>
+	    </div>
+	    <div class="form-group">
+			<button id="clear" class="btn btn-info form-control" type="button">
+				<span class="glyphicon glyphicon-trash" aria-hidden="true"></span> CLEAR
+			</button>
+	    </div>
+	</div>
+</body>
+</html>

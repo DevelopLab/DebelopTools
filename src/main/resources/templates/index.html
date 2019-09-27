@@ -1,0 +1,68 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+	<title>DebelopTools</title>
+	<link rel="shortcut icon" href="./img/faviconIco.png" >
+	<link rel="stylesheet" href="./css/bootstrap.min.css">
+	<script type="text/javascript" src="./js/jquery.min.js"></script>
+	<script type="text/javascript" src="./js/bootstrap.js"></script>
+</head>
+<body onload="init()">
+	<nav class="navbar navbar-default">
+		<h2>
+			<img id="icon-circle-samll" style="border-radius: 10px; width: 40px; height: 40px;" src="./img/faviconIco.png">
+			DebelopTools
+		</h2>
+	</nav>
+	<!-- タブ・メニュー -->
+	<ul class="nav nav-tabs">
+			<li id="link1" class="active"><a id="init" href="#command" data-toggle="tab">サーバ コマンド一覧</a></li>
+			<li id="link2"><a href="#cumber" data-toggle="tab">負荷ツール</a></li>
+	</ul>
+
+	<!--コンテンツ-->
+	<div id="myTabContent" class="tab-content">
+		<div class="tab-pane fade in active" id="command">
+			<p><iframe src="command/edit.html" width="100%" height="70%"></iframe></p>
+		</div>
+		<div class="tab-pane fade in" id="cumber">
+			<p><iframe src="cumber/edit.html" width="100%" height="70%"></iframe></p>
+		</div>
+	</div>
+
+	<!--/* フッター部分：タイトル */-->
+	<div th:fragment="footer">
+		<footer class="footer">
+			<div class="container">
+				<p class="text-muted text-center">Copyright (M.hirasihi) 2019 Debelop Tools.
+					<a class="btn-social text-center" href="https://chatwork.com/DevelopLab">
+						<img id="icon-circle-samll" style="border-radius: 10px; width: 40px; height: 40px;" src="./img/mokuba-m.jpg">
+					</a>
+				</p>
+			</div>
+		</footer>
+	</div>
+	<script type='text/javascript'>
+		function init() {
+			var command = document.getElementById("init");
+			command.click();
+		}
+		$("#link1").click( function() {
+			var elem1 = document.getElementById("link1");
+			var elem2 = document.getElementById("link2");
+			elem1.classList.add("active");
+			elem2.classList.remove("active");
+		});
+		$("#link2").click( function() {
+			var elem1 = document.getElementById("link1");
+			var elem2 = document.getElementById("link2");
+			elem1.classList.remove("active");
+			elem2.classList.add("active");
+		});
+	</script>
+</body>
+</html>
